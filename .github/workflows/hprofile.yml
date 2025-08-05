@@ -21,7 +21,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build project
-        run: ./mvnw clean install -DskipTests=true
+        run: mvn clean install -DskipTests=true
 
       - name: Run SonarScanner
         run: |
