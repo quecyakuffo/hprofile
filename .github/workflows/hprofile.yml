@@ -1,10 +1,13 @@
 name: Hprofile Actions (Test V2)
-
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   sonarcloud:
+    name: SonarCloud Scan
     runs-on: ubuntu-latest
 
     steps:
@@ -17,9 +20,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build (optional)
-        run: |
-          ./mvnw clean install -DskipTests=true
+      - name: Build project
+        run: ./mvnw clean install -DskipTests=true
 
       - name: Run SonarScanner
         run: |
@@ -33,5 +35,4 @@ jobs:
             -Dsonar.jacoco.reportsPath=target/jacoco.exec \
             -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml \
             -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/
-             
              
