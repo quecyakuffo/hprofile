@@ -8,7 +8,6 @@ on:
 
 jobs:
   sonarcloud:
-    name: SonarCloud Scan
     runs-on: ubuntu-latest
 
     steps:
@@ -25,9 +24,11 @@ jobs:
         run: mvn clean install -DskipTests=true
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         with:
-          projectKey: actionscode
-          organization: hprofile0104
+          args: >
+            -Dsonar.projectKey=actionscode
+            -Dsonar.organization=hprofile0104
+            -Dsonar.host.url=https://sonarcloud.io
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
