@@ -1,46 +1,40 @@
-name: SonarCloud
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened]
-
+name: Hprofile Actions
+on: workflow_dispatch
 jobs:
-  build:
-    name: Build and analyze
+  Testing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Code checkout
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: 'temurin'
+      - name: Maven test
+        run: mvn test
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+      - name: Checkstyle
+        run: mvn checkstyle:checkstyle
 
-      - name: Cache Maven packages
-        uses: actions/cache@v4
+      # Setup java 11 to be default (sonar-scanner requirement as of 5.x)
+      - name: Set Java 11
+        uses: actions/setup-java@v3
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-m2
+         distribution: 'temurin' # See 'Supported distributions' for available options
+         java-version: '11'
 
-      - name: Build and analyze with SonarCloud
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=hprofile0104_actionscode \
-          -Dsonar.organization=hprofile0104 \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+    # Setup sonar-scanner
+      - name: Setup SonarQube
+        uses: warchant/setup-sonar-scanner@v7
+   
+    # Run sonar-scanner
+      - name: SonarQube Scan
+        run: sonar-scanner
+           -Dsonar.host.url=${{ secrets.SONAR_URL }}
+           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+           -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+           -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+           -Dsonar.sources=src/
+           -Dsonar.junit.reportsPath=target/surefire-reports/ 
+           -Dsonar.jacoco.reportsPath=target/jacoco.exec 
+           -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
+           -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/
+
+    
